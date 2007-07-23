@@ -3,7 +3,7 @@ package String::EscapeCage;
 use warnings;
 use strict;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 use base qw( Exporter );
 our @EXPORT_OK = qw( cage uncage );  # escape<foo> added automatically
 use overload
@@ -14,7 +14,6 @@ use overload
 
 use Carp;
 use Symbol qw( qualify_to_ref );
-use Scalar::Util qw( refaddr set_prototype );
 sub untaint($) {  $_[0] =~ /(.*)/s;  return $1;  }
   # This should be in a module, but Scalar::Util provides only "tainted",
   # and Taint::Util and Taint::Runtime aren't in the standard distribution.
@@ -143,7 +142,7 @@ my %SCHEMES = (  # schemename => (transforming (xform)) escaping sub
 	}
   },
 
-  cstring => do {
+  cstring => do {  # or maybe use String::Escape
 	my %ESCAPE_OF = map { eval qq| "\\$_" | => "\\$_" }
 	  qw( 0 a b t n f r \ " );
 	my $RE = eval 'qr/[' . join( '', keys(%ESCAPE_OF) ) . ']/';
@@ -191,7 +190,7 @@ String::EscapeCage - Cage and escape strings to prevent injection attacks
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 
 =head1 SYNOPSIS
@@ -282,11 +281,11 @@ object method.
 
 =over 4
 
-=item * Turn global paranoia off (not yet implemented); cage all incoming strings
+=item * Turn global paranoia off (not yet implemented); cage all incoming strings.
 
-=item * In each package, turn local paranoia on (not yet implemented); escape strings in the package's code.
+=item * Over time, in each package, turn local paranoia on (not yet implemented); escape strings in the package's code and cage new strings.
 
-=item * Turn global paranoia back on.
+=item * When done, turn global paranoia back on.
 
 =item * Remove explicit local paranoia setting if desired.
 
@@ -326,9 +325,10 @@ around some data but not others.
 =item * A tainted value may be used as a method name or symbolic sub;
 String::EscapeCage disallows this.
 
-=item * Taintedness can (essentially only) be removed by regular
-expressions or hash keys; an String::EscapeCage can only be removed with an
-explicit method call to L<C<uncage>>, L<C<escapehtml>>, L<C<re>>, etc.
+=item * Taintedness can (essentially only) be removed via regular
+expressions or hash keys; a String::EscapeCage can only be removed
+with an explicit call to L<C<uncage>>, L<C<re> (regular expression)>,
+L<C<escapehtml>>, etc.
 
 =item * String::EscapeCage doesn't do the cleanup that the C<-T> taint flag
 enables:  C<@INC>, C<$ENV{PERL5LIB}> and C<$ENV{PERLLIB}>, C<$ENV{PATH}>,
@@ -343,8 +343,8 @@ any setuid/setgid issues.
 
 =over 4
 
-=item * The design of the interface lacks input from a real project and
-is subject to change.
+=item * The interface was designed without input from a real project
+and is subject to change.
 
 =item * You can't use a regular expression on a caged string
 
@@ -352,7 +352,7 @@ is subject to change.
 
 Please report any bugs or feature requests to
 C<bug-escapecage at rt.cpan.org>, or through the web interface at
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=EscapeCage>.
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=String-EscapeCage>.
 I will be notified, and then you'll automatically be notified of progress on
 your bug as I make changes.
 
@@ -381,9 +381,10 @@ lots more.
 escaping schemas.
 
 =item * Make wrappers of standard libraries that perform caging.
-A wrapper class for an IO::Handle object whose C<readline> returns
+For example:  A wrapper class for an IO::Handle object whose C<readline>
+returns caged strings or whose C<print> etc automatically htmlescapes
 caged strings.  A sub that changes all the values in an Apache::Request
-object into caged values.
+object into caged values.  Validation routines that "see through" cages.
 
 =item * Optimize.  Maybe memoize escaped values, either by object
 or by value.  Maybe add the ability to turn off error checking.

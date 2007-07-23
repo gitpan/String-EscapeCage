@@ -1,5 +1,7 @@
 #!perl -T
 
+use warnings;
+use strict;
 use Test::More tests => 7;
 
 BEGIN {

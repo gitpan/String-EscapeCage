@@ -7,7 +7,7 @@ WriteMakefile(
     NAME         => 'String::EscapeCage',
     VERSION_FROM => 'lib/String/EscapeCage.pm', # finds \$VERSION
     AUTHOR       => 'Mark P Sullivan ()',
-    ABSTRACT     => 'Escape strings and prevent injection attacks',
+    ABSTRACT_FROM=> 'lib/String/EscapeCage.pm', # finds ^($package\s-\s)(.*)
     PREREQ_PM    => {
                      'Test::Simple' => 0.44,
                     },
